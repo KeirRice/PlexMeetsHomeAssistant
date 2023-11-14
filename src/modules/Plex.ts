@@ -2,6 +2,10 @@
 import axios from 'axios';
 import _ from 'lodash';
 
+const agent = new https.Agent({
+  rejectUnauthorized: false,
+})
+
 class Plex {
 	ip: string;
 
@@ -53,7 +57,8 @@ class Plex {
 		const url = this.authorizeURL(`${this.getBasicURL()}/clients`);
 		try {
 			const result = await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			});
 			this.clients = result.data.MediaContainer.Server;
 		} catch (err) {
@@ -66,7 +71,8 @@ class Plex {
 		if (_.isEmpty(this.providers)) {
 			const url = this.authorizeURL(`${this.getBasicURL()}/media/providers`);
 			const providersData = await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			});
 			this.providers = providersData.data.MediaContainer.MediaProvider;
 		}
@@ -84,7 +90,8 @@ class Plex {
 					const url = this.authorizeURL(`${this.getBasicURL()}/${provider.identifier}/tags?type=310`);
 					liveTVRequests.push(
 						axios.get(url, {
-							timeout: this.requestTimeout
+							timeout: this.requestTimeout,
+ 							httpsAgent: agent
 						})
 					);
 					liveTVRequestsNames.push(provider.title);
@@ -112,7 +119,8 @@ class Plex {
 					url += `&beginsAt<=${Math.floor(Date.now() / 1000)}`;
 					liveTVRequests.push(
 						axios.get(url, {
-							timeout: this.requestTimeout
+							timeout: this.requestTimeout,
+ 							httpsAgent: agent
 						})
 					);
 					liveTVRequestsNames.push(provider.title);
@@ -141,7 +149,8 @@ class Plex {
 		const url = this.authorizeURL(`${this.getBasicURL()}/`);
 		this.serverInfo = (
 			await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			})
 		).data.MediaContainer;
 		return this.serverInfo;
@@ -151,7 +160,8 @@ class Plex {
 		if (_.isEmpty(this.sections)) {
 			const url = this.authorizeURL(`${this.getBasicURL()}/library/sections`);
 			const sectionsData = await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			});
 			this.sections = sectionsData.data.MediaContainer.Directory;
 		}
@@ -182,7 +192,8 @@ class Plex {
 			this.playlists = [];
 			const url = this.authorizeURL(`${this.getBasicURL()}/playlists`);
 			const playlistsData = await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			});
 			this.playlists = playlistsData.data.MediaContainer.Metadata;
 		}
@@ -192,7 +203,8 @@ class Plex {
 	getCollection = async (sectionID: number): Promise<Array<Record<string, any>>> => {
 		const url = this.authorizeURL(`${this.getBasicURL()}/library/sections/${sectionID}/collections`);
 		const collectionsData = await axios.get(url, {
-			timeout: this.requestTimeout
+			timeout: this.requestTimeout,
+ 			httpsAgent: agent
 		});
 		return _.isNil(collectionsData.data.MediaContainer.Metadata) ? [] : collectionsData.data.MediaContainer.Metadata;
 	};
@@ -208,14 +220,16 @@ class Plex {
 		let result: Record<string, any> = {};
 		try {
 			result = await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			});
 		} catch (err) {
 			// probably hitting limit of items to return, we need to request in parts
 			if (_.includes(err.message, 'Request failed with status code 500')) {
 				url += `&X-Plex-Container-Start=0&X-Plex-Container-Size=${bulkItems}`;
 				result = await axios.get(url, {
-					timeout: this.requestTimeout
+					timeout: this.requestTimeout,
+ 					httpsAgent: agent
 				});
 				const { totalSize } = result.data.MediaContainer;
 				let startOfItems = bulkItems;
@@ -229,7 +243,8 @@ class Plex {
 								}&X-Plex-Container-Start=${startOfItems}&X-Plex-Container-Size=${bulkItems}`
 							),
 							{
-								timeout: this.requestTimeout
+								timeout: this.requestTimeout,
+ 								httpsAgent: agent
 							}
 						)
 					);
@@ -276,14 +291,16 @@ class Plex {
 		let result: Record<string, any> = {};
 		try {
 			result = await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			});
 		} catch (err) {
 			// probably hitting limit of items to return, we need to request in parts
 			if (_.includes(err.message, 'Request failed with status code 500')) {
 				url += `&X-Plex-Container-Start=0&X-Plex-Container-Size=${bulkItems}`;
 				result = await axios.get(url, {
-					timeout: this.requestTimeout
+					timeout: this.requestTimeout,
+ 					httpsAgent: agent
 				});
 				const { totalSize } = result.data.MediaContainer;
 				let startOfItems = bulkItems;
@@ -297,7 +314,8 @@ class Plex {
 								}&X-Plex-Container-Start=${startOfItems}&X-Plex-Container-Size=${bulkItems}`
 							),
 							{
-								timeout: this.requestTimeout
+								timeout: this.requestTimeout,
+ 								httpsAgent: agent
 							}
 						)
 					);
@@ -344,7 +362,8 @@ class Plex {
 		);
 		return (
 			await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			})
 		).data.MediaContainer;
 	};
@@ -355,7 +374,8 @@ class Plex {
 		);
 		return (
 			await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			})
 		).data.MediaContainer;
 	};
@@ -372,7 +392,8 @@ class Plex {
 		);
 		return (
 			await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			})
 		).data.MediaContainer;
 	};
@@ -466,7 +487,8 @@ class Plex {
 
 		console.log('Getting info about channel stream...');
 		const res2 = await axios.get(url2, {
-			timeout: 60000
+			timeout: 60000,
+ 			httpsAgent: agent
 		});
 
 		console.log(res2.data);
@@ -474,7 +496,8 @@ class Plex {
 		if (_.isNil(res2.data.MediaContainer.Metadata[0].Media[0].TranscodeSession)) {
 			console.log('NOT STARTED - Starting...');
 			const res1 = await axios.get(this.authorizeURL(startURL), {
-				timeout: 60000
+				timeout: 60000,
+ 				httpsAgent: agent
 			});
 			console.log(res1);
 			console.log('____');
@@ -486,14 +509,16 @@ class Plex {
 
 		console.log('Deciding...');
 		let res = await axios.get(this.authorizeURL(decisionURL), {
-			timeout: this.requestTimeout
+			timeout: this.requestTimeout,
+ 			httpsAgent: agent
 		});
 		while (parseFloat(res.data.MediaContainer.Metadata[0].Media[0].Part[0].key.split('offset=')[1].split('&')[0]) < 3) {
 			// eslint-disable-next-line no-await-in-loop
 			await sleep(500);
 			// eslint-disable-next-line no-await-in-loop
 			res = await axios.get(this.authorizeURL(decisionURL), {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			});
 			console.log('Waiting for new url...');
 		}
@@ -546,7 +571,8 @@ class Plex {
 		);
 		return (
 			await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			})
 		).data.MediaContainer.Metadata[0];
 	};
@@ -555,7 +581,8 @@ class Plex {
 		const url = this.authorizeURL(`${this.getBasicURL()}${path}`);
 		return (
 			await axios.get(url, {
-				timeout: this.requestTimeout
+				timeout: this.requestTimeout,
+ 				httpsAgent: agent
 			})
 		).data.MediaContainer.Metadata;
 	};
